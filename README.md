@@ -264,3 +264,9 @@ recipe with the recipe form, and viewing a list of recipes.
 - [Flask-Bcrypt][bcrypt]
 
 [bcrypt]: https://flask-bcrypt.readthedocs.io/en/1.0.1/
+
+
+# Python P4 IAM Lab
+
+Completed the "Putting it all together" lab for Phase 4.
+Updated tests, migrations, and app functionality.
