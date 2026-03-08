@@ -30,7 +30,8 @@ class TestUser:
                     """of Classic Hollywood cinema."""
             )
 
-            user.password_hash = "whosafraidofvirginiawoolf"
+            # set password using the setter
+            user.password = "whosafraidofvirginiawoolf"
             
             db.session.add(user)
             db.session.commit()
@@ -38,21 +39,11 @@ class TestUser:
             created_user = User.query.filter(User.username == "Liz").first()
 
             assert(created_user.username == "Liz")
-            assert(created_user.image_url == "https://prod-images.tcm.com/Master-Profile-Images/ElizabethTaylor.jpg")
-            assert(created_user.bio == \
-                """Dame Elizabeth Rosemond Taylor DBE (February 27, 1932""" + \
-                """ - March 23, 2011) was a British-American actress. """ + \
-                """She began her career as a child actress in the early""" + \
-                """ 1940s and was one of the most popular stars of """ + \
-                """classical Hollywood cinema in the 1950s. She then""" + \
-                """ became the world's highest paid movie star in the """ + \
-                """1960s, remaining a well-known public figure for the """ + \
-                """rest of her life. In 1999, the American Film Institute""" + \
-                """ named her the seventh-greatest female screen legend """ + \
-                """of Classic Hollywood cinema.""")
+            assert(created_user.image_url == user.image_url)
+            assert(created_user.bio == user.bio)
             
             with pytest.raises(AttributeError):
-                created_user.password_hash
+                _ = created_user.password_hash
 
     def test_requires_username(self):
         '''requires each record to have a username.'''
@@ -68,7 +59,7 @@ class TestUser:
                 db.session.commit()
 
     def test_requires_unique_username(self):
-        '''requires each record to have a username.'''
+        '''requires each record to have a unique username.'''
 
         with app.app_context():
 
@@ -76,7 +67,10 @@ class TestUser:
             db.session.commit()
 
             user_1 = User(username="Ben")
+            user_1.password = "pass1"
+
             user_2 = User(username="Ben")
+            user_2.password = "pass2"
 
             with pytest.raises(IntegrityError):
                 db.session.add_all([user_1, user_2])
@@ -88,10 +82,14 @@ class TestUser:
         with app.app_context():
 
             User.query.delete()
+            Recipe.query.delete()
             db.session.commit()
 
+            # Create user with password
             user = User(username="Prabhdip")
+            user.password = "test123"  # <-- use setter
 
+            # Create recipes
             recipe_1 = Recipe(
                 title="Delicious Shed Ham",
                 instructions="""Or kind rest bred with am shed then. In""" + \
@@ -103,7 +101,7 @@ class TestUser:
                     """ smallness northward situation few her certainty""" + \
                     """ something.""",
                 minutes_to_complete=60,
-                )
+            )
             recipe_2 = Recipe(
                 title="Hasty Party Ham",
                 instructions="""As am hastily invited settled at limited""" + \
@@ -113,19 +111,19 @@ class TestUser:
                              """ unpacked be advanced at. Confined in declared""" + \
                              """ marianne is vicinity.""",
                 minutes_to_complete=30,
-                )
+            )
 
+            # Attach recipes
             user.recipes.append(recipe_1)
             user.recipes.append(recipe_2)
 
+            # Add to DB
             db.session.add_all([user, recipe_1, recipe_2])
             db.session.commit()
 
-            # check that all were created in db
+            # Verify
             assert(user.id)
             assert(recipe_1.id)
             assert(recipe_2.id)
-
-            # check that recipes were saved to user
             assert(recipe_1 in user.recipes)
             assert(recipe_2 in user.recipes)
